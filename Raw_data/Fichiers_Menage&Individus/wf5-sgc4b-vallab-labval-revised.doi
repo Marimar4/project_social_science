@@ -1,0 +1,52 @@
+//  include:    wf5-sgc4b-vallab-labval-revised.doi
+//  used by:    wf5-sgc4c-vallab-revise.do \ for stata 9
+//  task:       revised value labels for SGC
+//  project:    workflow chapter 5
+//  author:     scott long \ 2008-10-24
+
+//  note:       new label names begin with N
+
+label value  age          Nage
+label value  atdiseas     NLlikely
+label value  atgenet      NLlikely
+label value  atraised     NLlikely
+label value  cause        Ncause
+label value  clawdoc      NLrespons
+label value  clawhosp     NLrespons
+label value  clawpmed     NLrespons
+label value  cntry_iu     Ncntry_iu
+label value  edudeg       Nedudeg
+label value  gender       Ngender
+label value  gvdisab      NLrespons
+label value  gvhealth     NLrespons
+label value  gvhouse      NLrespons
+label value  gvjob        NLrespons
+label value  impown       NLlikely
+label value  imptreat     NLlikely
+label value  marital      Nmarital
+label value  opfam        NLdummy
+label value  opforget     NLdummy
+label value  opfriend     NLdummy
+label value  opnomed      NLdummy
+label value  oppremed     NLdummy
+label value  opspirit     NLdummy
+label value  pubfrght     Npubfrght
+label value  puboften     Npuboften
+label value  pubsymp      Npubsymp
+label value  sdchild      NLdist
+label value  sdfriend     NLdist
+label value  sdmarry      NLdist
+label value  sdneighb     NLdist
+label value  sdsocial     NLdist
+label value  sdwork       NLdist
+label value  serious      Nserious
+label value  stfriend     NLlikert
+label value  stlimits     NLlikert
+label value  stout        NLlikert
+label value  stuncmft     NLlikert
+label value  tcdoc        NLimport
+label value  tcfam        NLimport
+label value  tcfriend     NLimport
+label value  trust        Ntrust
+label value  vignum       Nvignum
+label value  wrkstat      Nwrkstat

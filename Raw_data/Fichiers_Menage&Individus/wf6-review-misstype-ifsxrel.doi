@@ -1,0 +1,8 @@
+//  include:    wf6-review-misstype-ifsxrel.doi
+//  used by:    wf6-review-misstype.do \ for stata 9
+//  task:       recode .x if no sex rel; .p if sex rel refused
+//  project:    workflow chapter 6
+//  author:     scott long \ 2008-10-23
+
+replace `varnm'V2 = .x if (sxrelinV2==2)  // not in sex relationship
+replace `varnm'V2 = .p if (sxrelinV2==.r) // refused sxrelin question

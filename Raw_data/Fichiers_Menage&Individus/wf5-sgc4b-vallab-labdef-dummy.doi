@@ -1,0 +1,121 @@
+//                           "1234567890"
+label define NLdist     1    "Definitely Willing", modify
+label define NLdist     2    "Probably Willing", modify
+label define NLdist     3    "Probably Unwilling", modify
+label define NLdist     4    "Definitely Unwilling", modify
+//                           "1234567890"
+label define NLdummy    1    "Yes", modify
+label define NLdummy    2    "No", modify
+//                           "1234567890"
+label define NLimport   1    "Not at all Important", modify
+label define NLimport   10   "Very Important", modify
+//                           "1234567890"
+label define NLlikely   1    "Very Likely", modify
+label define NLlikely   2    "Somewhat Likely", modify
+label define NLlikely   3    "Not Very Likely", modify
+label define NLlikely   4    "Not at all Likely", modify
+//                           "1234567890"
+label define NLlikert   1    "Strongly agree", modify
+label define NLlikert   2    "Agree", modify
+label define NLlikert   3    "Disagree", modify
+label define NLlikert   4    "Strongly disagree", modify
+//                           "1234567890"
+label define NLrespons  1    "Definitely should be", modify
+label define NLrespons  2    "Probably should be", modify
+label define NLrespons  3    "Probably shouldnt be", modify
+label define NLrespons  4    "Definitely shouldnt be", modify
+//                           "1234567890"
+label define Nage       18   "18 years", modify
+label define Nage       97   "97 or older", modify
+//                           "1234567890"
+label define Ncause     1    "Depression", modify
+label define Ncause     2    "Asthma", modify
+label define Ncause     3    "Schizophrenia", modify
+label define Ncause     4    "Stress", modify
+label define Ncause     5    "Something else", modify
+label define Ncause     7    "More than one answer", modify
+//                           "1234567890"
+label define Ncntry_iu  11   "Argentina", modify
+label define Ncntry_iu  12   "Bangladesh", modify
+label define Ncntry_iu  13   "Brazil", modify
+label define Ncntry_iu  14   "Bulgaria", modify
+label define Ncntry_iu  15   "Cyprus", modify
+label define Ncntry_iu  16   "Finland", modify
+label define Ncntry_iu  17   "Germany", modify
+label define Ncntry_iu  18   "Hungary", modify
+label define Ncntry_iu  19   "Iceland", modify
+label define Ncntry_iu  20   "Japan", modify
+label define Ncntry_iu  21   "Korea Republic", modify
+label define Ncntry_iu  22   "Nepal", modify
+label define Ncntry_iu  23   "New Zealand", modify
+label define Ncntry_iu  24   "Philippines", modify
+label define Ncntry_iu  25   "South Africa", modify
+label define Ncntry_iu  26   "Spain", modify
+label define Ncntry_iu  27   "United Kingdom", modify
+label define Ncntry_iu  28   "United States", modify
+//                           "1234567890"
+label define Nedudeg    0    "No formal qualification", modify
+label define Nedudeg    1    "Lowest formal qualification", modify
+label define Nedudeg    2    "Above lowest qualification", modify
+label define Nedudeg    3    "Higher secondary completed", modify
+label define Nedudeg    4    "Above higher secondary level", modify
+label define Nedudeg    5    "University degree completed", modify
+//                           "1234567890"
+label define Ngender    1    "Male", modify
+label define Ngender    2    "Female", modify
+//                           "1234567890"
+label define Nmarital   1    "Married", modify
+label define Nmarital   2    "Widowed", modify
+label define Nmarital   3    "Divorced", modify
+label define Nmarital   4    "Separated, but married", modify
+label define Nmarital   5    "Living as a couple/Cohabiting", modify
+label define Nmarital   6    "Single, never married", modify
+//                           "1234567890"
+label define Npubfright 1    "Very Frightening", modify
+label define Npubfright 2    "Somewhat Frightening", modify
+label define Npubfright 3    "Not Very Frightening", modify
+label define Npubfright 4    "Not at all Frightening", modify
+//                           "1234567890"
+label define Npuboften  1    "Frequently", modify
+label define Npuboften  2    "Occasionally", modify
+label define Npuboften  3    "Rarely", modify
+label define Npuboften  4    "Never", modify
+//                           "1234567890"
+label define Npubsymp   1    "No Sympathy at all", modify
+label define Npubsymp   2    "A Little Sympathy", modify
+label define Npubsymp   3    "Quite a bit of Sympathy", modify
+label define Npubsymp   4    "A Great deal of Sympathy", modify
+//                           "1234567890"
+label define Nserious   0    "NAP", modify
+label define Nserious   1    "Very serious", modify
+label define Nserious   2    "Moderately serious", modify
+label define Nserious   3    "Not very serious", modify
+label define Nserious   4    "Not at all serious", modify
+//                           "1234567890"
+label define Ntrust     1    "Most people can be trusted", modify
+label define Ntrust     2    "Need to be very careful", modify
+//                           "1234567890"
+label define Nvignum    1    "Depressive Disorder/Majority/Man", modify
+label define Nvignum    2    "Depressive Disorder/Majority/Woman", modify
+label define Nvignum    3    "Depressive Disorder/Minority/Man", modify
+label define Nvignum    4    "Depressive Disorder/Minority/Woman", modify
+label define Nvignum    5    "Schizophrenia/Majority/Man", modify
+label define Nvignum    6    "Schizophrenia/Majority/Woman", modify
+label define Nvignum    7    "Schizophrenia/Minority/Man", modify
+label define Nvignum    8    "Schizophrenia/Minority/Woman", modify
+label define Nvignum    9    "Asthma/Majority/Man", modify
+label define Nvignum    10   "Asthma/Majority/Woman", modify
+label define Nvignum    11   "Asthma/Minority/Man", modify
+label define Nvignum    12   "Asthma/Minority/Woman", modify
+//                           "1234567890"
+label define Nwrkstat   1    "Employed-full time", modify
+label define Nwrkstat   2    "Employed-part time", modify
+label define Nwrkstat   3    "Employed-less than part-time", modify
+label define Nwrkstat   4    "Helping family member", modify
+label define Nwrkstat   5    "Unemployed (Laid off, Without a job)", modify
+label define Nwrkstat   6    "Student,school,vocational training", modify
+label define Nwrkstat   7    "Retired", modify
+label define Nwrkstat   8    "Housewife, home duties", modify
+label define Nwrkstat   9    "Permanently disabled", modify
+label define Nwrkstat   10   "Other, not in labour force", modify
+//                           "1234567890"

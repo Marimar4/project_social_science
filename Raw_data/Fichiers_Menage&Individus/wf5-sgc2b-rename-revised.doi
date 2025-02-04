@@ -1,0 +1,51 @@
+//  include:    wf5-sgc2b-rename-revised.doi
+//  used by:    wf5-sgc2c-rename.do \ for stata 9
+//  task:       rename variables for SGC
+//  project:    workflow chapter
+//  author:     scott long \ 2008-10-24
+
+*rename  age          age
+*rename  atdisease    atdisease
+ rename  atgenes      atgenet
+*rename  atraised     atraised
+*rename  cause        cause
+*rename  cntry_iu     cntry_iu
+ rename  ctxfdoc      clawdoc
+ rename  ctxfhos      clawhosp
+ rename  ctxfmed      clawpmed
+*rename  edudeg       edudeg
+*rename  gender       gender
+ rename  gvdisben     gvdisab
+*rename  gvhealth     gvhealth
+ rename  gvhous       gvhouse
+*rename  gvjob        gvjob
+*rename  id_iu        id_iu
+*rename  impown       impown
+*rename  imptreat     imptreat
+*rename  marital      marital
+*rename  opfam        opfam
+ rename  opforg       opforget
+*rename  opfriend     opfriend
+ rename  oppme        oppremed
+ rename  pubfright    pubfrght
+*rename  puboften     puboften
+*rename  pubsymp      pubsymp
+*rename  sdchild      sdchild
+*rename  sdfriend     sdfriend
+ rename  sdlive       sdneighb
+*rename  sdmarry      sdmarry
+*rename  sdsocial     sdsocial
+*rename  sdwork       sdwork
+*rename  serious      serious
+*rename  stfriend     stfriend
+*rename  stlimits     stlimits
+*rename  stout        stout
+ rename  stuncom      stuncmft
+*rename  tcdoc        tcdoc
+*rename  tcfam        tcfam
+*rename  tcfriend     tcfriend
+ rename  tonpm        opnomed
+ rename  tospi        opspirit
+*rename  trust        trust
+*rename  vignum       vignum
+*rename  wrkstat      wrkstat

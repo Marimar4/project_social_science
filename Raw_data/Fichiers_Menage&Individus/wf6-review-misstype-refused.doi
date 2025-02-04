@@ -1,0 +1,8 @@
+//  include:    wf6-review-misstype-refused.doi
+//  used by:    wf6-review-misstype.do \ for stata 9
+//  task:       recode .a to .r if refused
+//  project:    workflow chapter
+//  author:     scott long \ 2008-10-23
+
+clonevar `varnm'V2 = `varnm'
+recode `varnm'V2 .a=.r

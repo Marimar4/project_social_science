@@ -1,0 +1,145 @@
+//  include:    wf5-sgc4b-vallab-labdef-revised.doi
+//  used by:    wf5-sgc4c-vallab-revise.do \ for stata 9
+//  task:       revised label definitions for SGC
+//  project:    workflow chapter 5
+//  author:     scott long \ 2008-10-24
+
+//  Note: new labels are named with N at start of name
+
+//                            1234567890
+label define NLdist     1    "1Definite", modify
+label define NLdist     2    "2Probably", modify
+label define NLdist     3    "3ProbNot", modify
+label define NLdist     4    "4DefNot", modify
+
+//                            1234567890
+label define NLdummy    1    "1_Yes", modify
+label define NLdummy    2    "2_No", modify
+
+//                            1234567890
+label define NLimport   1    "1NotAtAll", modify
+label define NLimport   10   "10Very", modify
+
+//                            1234567890
+label define NLlikely   1    "1V_Likely", modify
+label define NLlikely   2    "2Somewhat", modify
+label define NLlikely   3    "3NotVery", modify
+label define NLlikely   4    "4NotAtAll", modify
+
+//                            1234567890
+label define NLlikert   1    "1StAgree", modify
+label define NLlikert   2    "2Agree", modify
+label define NLlikert   3    "3Disagree", modify
+label define NLlikert   4    "4StDisagr", modify
+
+//                            1234567890
+label define NLrespons  1    "1Definite", modify
+label define NLrespons  2    "2Probably", modify
+label define NLrespons  3    "3ProbNot", modify
+label define NLrespons  4    "4DefNot", modify
+
+//                            1234567890
+label define Nage       18   "18 years", modify
+label define Nage       97   ">=97", modify
+
+//                            1234567890
+label define Ncause     1    "1Depres", modify
+label define Ncause     2    "2Asthma", modify
+label define Ncause     3    "3Schizo", modify
+label define Ncause     4    "4Stress", modify
+label define Ncause     5    "5Other", modify
+label define Ncause     7    "7Multipl", modify
+
+//                            1234567890
+label define Ncntry_iu  11   "Argentina", modify
+label define Ncntry_iu  12   "Bangladesh", modify
+label define Ncntry_iu  13   "Brazil", modify
+label define Ncntry_iu  14   "Bulgaria", modify
+label define Ncntry_iu  15   "Cyprus", modify
+label define Ncntry_iu  16   "Finland", modify
+label define Ncntry_iu  17   "Germany", modify
+label define Ncntry_iu  18   "Hungary", modify
+label define Ncntry_iu  19   "Iceland", modify
+label define Ncntry_iu  20   "Japan", modify
+label define Ncntry_iu  21   "Korea", modify
+label define Ncntry_iu  22   "Nepal", modify
+label define Ncntry_iu  23   "NewZealand", modify
+label define Ncntry_iu  24   "Philippines", modify
+label define Ncntry_iu  25   "SouthAfrica", modify
+label define Ncntry_iu  26   "Spain", modify
+label define Ncntry_iu  27   "UK", modify
+label define Ncntry_iu  28   "USA", modify
+
+//                            1234567890
+label define Nedudeg    0    "0NoFormal", modify
+label define Nedudeg    1    "1Lowest", modify
+label define Nedudeg    2    "2AboveLow", modify
+label define Nedudeg    3    "3Second", modify
+label define Nedudeg    4    "4Above2nd", modify
+
+//                            1234567890
+label define Ngender    1    "1_Male", modify
+label define Ngender    2    "2_Female", modify
+
+//                            1234567890
+label define Nmarital   1    "1Married", modify
+label define Nmarital   2    "2Widowed", modify
+label define Nmarital   3    "3Divorced", modify
+label define Nmarital   4    "4Separatd", modify
+label define Nmarital   5    "5Cohabit", modify
+label define Nmarital   6    "6Single", modify
+
+//                            1234567890
+label define Npubfright 1    "1Very", modify
+label define Npubfright 2    "2Some", modify
+label define Npubfright 3    "3NotVery", modify
+label define Npubfright 4    "4NotAtAll", modify
+
+//                            1234567890
+label define Npuboften  1    "1Frequent", modify
+label define Npuboften  2    "2Occasion", modify
+label define Npuboften  3    "3Rarely", modify
+label define Npuboften  4    "4Never", modify
+
+//                            1234567890
+label define Npubsymp   1    "1None", modify
+label define Npubsymp   2    "2Little", modify
+label define Npubsymp   3    "3QuiteBit", modify
+label define Npubsymp   4    "4Great", modify
+
+//                            1234567890
+label define Nserious   0    "NAP", modify
+label define Nserious   1    "1VSerious", modify
+label define Nserious   2    "2Moderate", modify
+label define Nserious   3    "3NotVery", modify
+label define Nserious   4    "4NotAtAll", modify
+
+//                            1234567890
+label define Ntrust     1    "1Trust", modify
+label define Ntrust     2    "2Careful", modify
+
+//                            1234567890
+label define Nvignum    1    "1DepMIn", modify
+label define Nvignum    2    "2DepFIn", modify
+label define Nvignum    3    "3DepMOut", modify
+label define Nvignum    4    "4DepFOut", modify
+label define Nvignum    5    "5SchMIn", modify
+label define Nvignum    6    "6SchFIn", modify
+label define Nvignum    7    "7SchMOut", modify
+label define Nvignum    8    "8SchFOut", modify
+label define Nvignum    9    "9AstMIn", modify
+label define Nvignum    10   "10AsFIn", modify
+label define Nvignum    11   "11AstMOut", modify
+label define Nvignum    12   "12AstFOut", modify
+
+//                            1234567890
+label define Nwrkstat   1    "1FullTime", modify
+label define Nwrkstat   2    "2PartTime", modify
+label define Nwrkstat   3    "3<PartTim", modify
+label define Nwrkstat   4    "4HelpFam", modify
+label define Nwrkstat   5    "5Unempl", modify
+label define Nwrkstat   6    "6Student", modify
+label define Nwrkstat   7    "7Retired", modify
+label define Nwrkstat   8    "8HouseWrk", modify
+label define Nwrkstat   9    "9Disabled", modify
+label define Nwrkstat   10   "10Othr~LF", modify

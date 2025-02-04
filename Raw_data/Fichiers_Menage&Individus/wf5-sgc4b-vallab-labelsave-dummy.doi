@@ -1,0 +1,101 @@
+label define Ldist 1 `"Definitely Willing"', modify
+label define Ldist 2 `"Probably Willing"', modify
+label define Ldist 3 `"Probably Unwilling"', modify
+label define Ldist 4 `"Definitely Unwilling"', modify
+label define Ldummy 1 `"Yes"', modify
+label define Ldummy 2 `"No"', modify
+label define Limport 1 `"Not at all Important"', modify
+label define Limport 10 `"Very Important"', modify
+label define Llikely 1 `"Very Likely"', modify
+label define Llikely 2 `"Somewhat Likely"', modify
+label define Llikely 3 `"Not Very Likely"', modify
+label define Llikely 4 `"Not at all Likely"', modify
+label define Llikert 1 `"Strongly agree"', modify
+label define Llikert 2 `"Agree"', modify
+label define Llikert 3 `"Disagree"', modify
+label define Llikert 4 `"Strongly disagree"', modify
+label define Lrespons 1 `"Definitely should be"', modify
+label define Lrespons 2 `"Probably should be"', modify
+label define Lrespons 3 `"Probably shouldnt be"', modify
+label define Lrespons 4 `"Definitely shouldnt be"', modify
+label define age 18 `"18 years"', modify
+label define age 97 `"97 or older"', modify
+label define cause 1 `"Depression"', modify
+label define cause 2 `"Asthma"', modify
+label define cause 3 `"Schizophrenia"', modify
+label define cause 4 `"Stress"', modify
+label define cause 5 `"Something else"', modify
+label define cause 7 `"More than one answer"', modify
+label define cntry_iu 11 `"Argentina"', modify
+label define cntry_iu 12 `"Bangladesh"', modify
+label define cntry_iu 13 `"Brazil"', modify
+label define cntry_iu 14 `"Bulgaria"', modify
+label define cntry_iu 15 `"Cyprus"', modify
+label define cntry_iu 16 `"Finland"', modify
+label define cntry_iu 17 `"Germany"', modify
+label define cntry_iu 18 `"Hungary"', modify
+label define cntry_iu 19 `"Iceland"', modify
+label define cntry_iu 20 `"Japan"', modify
+label define cntry_iu 21 `"Korea Republic"', modify
+label define cntry_iu 22 `"Nepal"', modify
+label define cntry_iu 23 `"New Zealand"', modify
+label define cntry_iu 24 `"Philippines"', modify
+label define cntry_iu 25 `"South Africa"', modify
+label define cntry_iu 26 `"Spain"', modify
+label define cntry_iu 27 `"United Kingdom"', modify
+label define cntry_iu 28 `"United States"', modify
+label define edudeg 0 `"No formal qualification"', modify
+label define edudeg 1 `"Lowest formal qualification"', modify
+label define edudeg 2 `"Above lowest qualification"', modify
+label define edudeg 3 `"Higher secondary completed"', modify
+label define edudeg 4 `"Above higher secondary level"', modify
+label define edudeg 5 `"University degree completed"', modify
+label define gender 1 `"Male"', modify
+label define gender 2 `"Female"', modify
+label define marital 1 `"Married"', modify
+label define marital 2 `"Widowed"', modify
+label define marital 3 `"Divorced"', modify
+label define marital 4 `"Separated, but married"', modify
+label define marital 5 `"Living as a couple/Cohabiting"', modify
+label define marital 6 `"Single, never married"', modify
+label define pubfright 1 `"Very Frightening"', modify
+label define pubfright 2 `"Somewhat Frightening"', modify
+label define pubfright 3 `"Not Very Frightening"', modify
+label define pubfright 4 `"Not at all Frightening"', modify
+label define puboften 1 `"Frequently"', modify
+label define puboften 2 `"Occasionally"', modify
+label define puboften 3 `"Rarely"', modify
+label define puboften 4 `"Never"', modify
+label define pubsymp 1 `"No Sympathy at all"', modify
+label define pubsymp 2 `"A Little Sympathy"', modify
+label define pubsymp 3 `"Quite a bit of Sympathy"', modify
+label define pubsymp 4 `"A Great deal of Sympathy"', modify
+label define serious 0 `"NAP"', modify
+label define serious 1 `"Very serious"', modify
+label define serious 2 `"Moderately serious"', modify
+label define serious 3 `"Not very serious"', modify
+label define serious 4 `"Not at all serious"', modify
+label define trust 1 `"Most people can be trusted"', modify
+label define trust 2 `"Need to be very careful"', modify
+label define vignum 1 `"Depressive Disorder/Majority/Man"', modify
+label define vignum 2 `"Depressive Disorder/Majority/Woman"', modify
+label define vignum 3 `"Depressive Disorder/Minority/Man"', modify
+label define vignum 4 `"Depressive Disorder/Minority/Woman"', modify
+label define vignum 5 `"Schizophrenia/Majority/Man"', modify
+label define vignum 6 `"Schizophrenia/Majority/Woman"', modify
+label define vignum 7 `"Schizophrenia/Minority/Man"', modify
+label define vignum 8 `"Schizophrenia/Minority/Woman"', modify
+label define vignum 9 `"Asthma/Majority/Man"', modify
+label define vignum 10 `"Asthma/Majority/Woman"', modify
+label define vignum 11 `"Asthma/Minority/Man"', modify
+label define vignum 12 `"Asthma/Minority/Woman"', modify
+label define wrkstat 1 `"Employed-full time"', modify
+label define wrkstat 2 `"Employed-part time"', modify
+label define wrkstat 3 `"Employed-less than part-time"', modify
+label define wrkstat 4 `"Helping family member"', modify
+label define wrkstat 5 `"Unemployed (Laid off, Without a job)"', modify
+label define wrkstat 6 `"Student,school,vocational training"', modify
+label define wrkstat 7 `"Retired"', modify
+label define wrkstat 8 `"Housewife, home duties"', modify
+label define wrkstat 9 `"Permanently disabled"', modify
+label define wrkstat 10 `"Other, not in labour force"', modify

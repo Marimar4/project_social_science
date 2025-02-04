@@ -1,0 +1,17 @@
+//  include:    wf7-matrix-nested-include.doi
+//  used by:    wf7-matrix-nested-include.do \ for stata 9
+//  task:       compute OR, z-test, BIC
+//  project:    workflow chapter
+//  author:     scott long \ 2008-10-24
+
+//  note:       irow does not need to be defined the 1st time the file is
+//              called. Local will be default be a null string treated as 0.
+
+local irow = `irow' + 1
+matrix b = e(b) // get betas
+matrix v = e(V) // get covariance of betas
+matrix stats[`irow',1] = exp(b[1,1]) // compute OR for female
+matrix stats[`irow',2] = b[1,1]/sqrt(v[1,1]) // compute z
+quietly estat ic // get BIC
+matrix temp = r(S)
+matrix stats[`irow',3] = temp[1,6]

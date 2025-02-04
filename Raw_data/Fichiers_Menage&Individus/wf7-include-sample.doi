@@ -1,0 +1,13 @@
+//  include:    wf7-include-sample.doi
+//  used by:    wf7-include-sample.do \ for stata 9
+//  task:       define sample for tenure example
+//  project:    workflow chapter 7
+//  author:     scott long \ 2008-10-24
+
+//  #1
+//  load data and select sample
+
+use wf-tenure, clear
+* in stata 10 and later: datasignature confirm
+drop if year>=11 // drop cases with long time in rank
+drop if prestige<1 // drop if unrated department
