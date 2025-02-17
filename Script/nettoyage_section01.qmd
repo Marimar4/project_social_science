@@ -1,0 +1,368 @@
+---
+title: "traitement section 0_1"
+author: "Nouboussi & cissé"
+format: html
+editor: visual
+---
+
+## chargement des library utiles
+
+```{r}
+
+library(haven)
+library(dplyr)
+
+```
+
+## Chargement de la section
+
+```{r}
+data <- read_dta("../Raw_data/Fichiers_Menage&Individus/sectionO1_select.dta")
+
+data <- data |> mutate(across(where(is.labelled), as_factor))
+```
+
+## La section 0
+
+ici, je vais tabuler toutes les varibales retenues dans la section zero pour sortir des statistiques descriptives de cette partie. certaines variables seront justes à titre informatif et ne serviront pas dans le modèle. donc la la fin de la section on va selectionner les variables qui iront dans le modèle:
+
+```{r}
+tables <- data |> 
+  select(s00q01, s00q02, s00q04, s00q07b, s00q08) |> 
+  lapply(function(var) {
+    df <- as.data.frame(table(var, useNA = "ifany"))
+    df$Pourcentage <- round(100 * df$Freq / sum(df$Freq), 1)  # Calcul du %
+    return(df)
+  })
+
+for (var in names(tables)) {
+  cat("\n==== Tableau des fréquences pour", var, "====\n")
+  print(tables[[var]])
+}
+
+```
+
+Pas de NA suivant ces variables. les jeunes sont assez équilibrez par région. ainsi que par milieu rural. et au moins 70% vive,t dans leur localité depuis plus de 5 ans.
+
+NB: juste la variables region et milieu de residence / arrondissement nous interessent ici
+
+**prend s00q07B pour une stat desc a presente**r
+
+```{r}
+# renpmmmer la variable sexe
+data <- data |> 
+  rename(
+    region = s00q01  ,
+    Departement = s00q02  , 
+    milieu_residence = s00q04  
+  )
+
+```
+
+## La section 1
+
+keep menage_id individu_id **s01q01** **s01q02** age age_cm **s01q05** **s01q07** **s01q07**\_cm **s01q07**\_pere **s01q07**\_mere **s01q08** **s01q08**\_cm **s01q08**\_pere **s01q08** \_mere s01q14 s01q15 s01q22 s01q23 s01q24 s01q25 s01q26 s01q27 s01q29 s01q30 s01q31 s01q32 s01q33 s01q34
+
+### lot 1: sexe, lien avec le cm, a un acte de naissance, et sit mat,
+
+```{r}
+tables <- data |> 
+    filter(age<=16) |> 
+  select( s01q01 , s01q02,  s01q05, s01q07, s01q07_cm,s01q07_pere ,s01q07_mere  ) |> 
+  lapply(function(var) {
+    df <- as.data.frame(table(var, useNA = "ifany"))
+    df$Pourcentage <- round(100 * df$Freq / sum(df$Freq), 1)  # Calcul du %
+    return(df)
+  })
+
+for (var in names(tables)) {
+  cat("\n==== Tableau des fréquences pour", var, "====\n")
+  print(tables[[var]])
+}
+```
+
+**tranche de 6 à 16 ans**
+
+50,3% sont des filles (pas de NA)
+
+52,9% dont les enfants du cm et 24,2% sont ses petits fils, 13,5% sont les neveux; Il n'ya pas de cm
+
+23% des enfants n'ont pas d'acte de naissance, et 1% non connu.
+
+rares sont mariés ou divorcés (0,4%)
+
+#### Correction du lot 1
+
+-regrouper lien avec le cm, 1 fils & filles, 2 petit fils & filles, 3 neveu/ niece, 4 autres
+
+-regrouper dispose acte de naissance: 1 oui , 2 non, 3 NC (y ajouter les na)
+
+-sit mat: traitement des NA puis recategorisation, 1 celibataire, 2 marié ou veuf, 3 nc pour les NA non corrigé
+
+```{r}
+data<-data |> 
+    mutate(lien_cm=as.factor(ifelse(s01q02=="Fils, Fille", "enfant",
+                             ifelse(s01q02=="Petit fils, petite fille", "petit enfant",
+                             ifelse(s01q02=="Neveu/Nièce", "Neveu/Niece","Autres")))),
+           acte_naissance=as.factor(ifelse(is.na(s01q05),"NC" ,as.character(s01q05))),
+           sit_mat_enfant= as.factor(ifelse(is.na(s01q07)& age<=13,"Célibataire", 
+                              ifelse(s01q07 %in%  c("Marié(e) monogame", "Marié(e) polygame","Union libre","Veuf(ve)","Divorcé(e)" ,"Séparé(e)"        ),"Marié(e)/Divorcé(e)", as.character(s01q07) ))))
+
+prop.table(table(data$lien_cm, useNA = "ifany"))
+prop.table(table(data$acte_naissance, useNA = "ifany"))
+prop.table(table(data$sit_mat_enfant, useNA = "ifany"))
+```
+
+Quelques verifications de la situation mat
+
+-   du cm
+
+```{r}
+tables <- data |> 
+    filter(age<=16) |> 
+  select( lien_cm, s01q07_cm,s01q08_cm   ) |> 
+  lapply(function(var) {
+    df <- as.data.frame(table(var, useNA = "ifany"))
+    df$Pourcentage <- round(100 * df$Freq / sum(df$Freq), 1)  # Calcul du %
+    return(df)
+  })
+
+for (var in names(tables)) {
+  cat("\n==== Tableau des fréquences pour", var, "====\n")
+  print(tables[[var]])
+}
+
+
+data |> 
+    select(s01q07_cm,s01q08_cm) |> 
+    table()
+
+# cette variable est fiable
+```
+
+-   du pere
+
+```{r}
+tables <- data |> 
+    filter(age<=16 ) |> 
+  select( lien_cm, s01q07_pere,s01q08_pere  ) |> 
+  lapply(function(var) {
+    df <- as.data.frame(table(var, useNA = "ifany"))
+    df$Pourcentage <- round(100 * df$Freq / sum(df$Freq), 1)  # Calcul du %
+    return(df)
+  })
+
+for (var in names(tables)) {
+  cat("\n==== Tableau des fréquences pour", var, "====\n")
+  print(tables[[var]])
+}
+
+
+data |> 
+    
+    select(s01q07_pere,s01q08_pere) |> 
+    table()
+
+# cette variable est fiable
+```
+
+-   de la mère
+
+```{r}
+
+tables <- data |> 
+    filter(age<=16) |> 
+  select( lien_cm, s01q07_pere,s01q08_pere  ) |> 
+  lapply(function(var) {
+    df <- as.data.frame(table(var, useNA = "ifany"))
+    df$Pourcentage <- round(100 * df$Freq / sum(df$Freq), 1)  # Calcul du %
+    return(df)
+  })
+
+for (var in names(tables)) {
+  cat("\n==== Tableau des fréquences pour", var, "====\n")
+  print(tables[[var]])
+}
+
+
+data |> 
+    
+    select(s01q07_mere,s01q08_mere) |> 
+    table()
+
+# cette variable est fiable
+
+```
+
+```{r}
+# renpmmmer la variable sexe
+data <- data |> 
+  rename(
+    sexe = s01q01 ,
+    sit_mat_cm = s01q07_cm , 
+    sit_mat_pere = s01q07_pere ,
+    sit_mat_mere = s01q07_mere,
+  )
+
+```
+
+NB: on garde la sexe, lien_cm, acte_naissance et sit_mat de l'enfant, du pere du cm et de la mere
+
+### lot 2: religion et nationalité
+
+```{r}
+tables <- data |> 
+    filter(age<=16) |> 
+  select( s01q14 , s01q15) |> 
+  lapply(function(var) {
+    df <- as.data.frame(table(var, useNA = "ifany"))
+    df$Pourcentage <- round(100 * df$Freq / sum(df$Freq), 1)  # Calcul du %
+    return(df)
+  })
+
+for (var in names(tables)) {
+  cat("\n==== Tableau des fréquences pour", var, "====\n")
+  print(tables[[var]])
+}
+
+```
+
+**tranche de 6 à 16 ans**
+
+99% sont de nationalité sénégalaise.
+
+97% sont mulsumans
+
+NB: on va laisser ces variables
+
+### lot 3: Presence du parent, son niveau d'instruction et sa CSP
+
+```{r}
+tables <- data |> 
+    filter(age<=16) |> 
+  select( s01q22 , s01q24,s01q25, s01q26, s01q27 ) |> 
+  lapply(function(var) {
+    df <- as.data.frame(table(var, useNA = "ifany"))
+    df$Pourcentage <- round(100 * df$Freq / sum(df$Freq), 1)  # Calcul du %
+    return(df)
+  })
+
+for (var in names(tables)) {
+  cat("\n==== Tableau des fréquences pour", var, "====\n")
+  print(tables[[var]])
+}
+```
+
+**tranche de 6 à 16 ans**
+
+60,8% des pères sont présent dans le ménage, 31,3% sont décédés et 7,2% dans la nature
+
+#### Correction du lot 3:
+
+```{r}
+data <- data |> 
+    mutate( presence_pere = as.factor( ifelse(s01q22 == "Oui", "Oui",
+                                       ifelse(s01q24 == "Non","Non décédé", as.character(s01q22)))),
+            presence_pere= as.factor(ifelse(is.na(presence_pere) & lien_cm=="enfant", "Oui",
+                                    ifelse(is.na(presence_pere) & lien_cm %in% c("Autres", "Neveu/Niece"),"Non",
+                                     ifelse(is.na(presence_pere) & lien_cm %in% c("petit enfant"),"Oui", as.character(presence_pere))) )),
+            
+            s01q25= as.factor(ifelse(s01q25 %in% c("Post-secondaire (préparation diplômes niveau BAC+2)","Supérieur" ), "Supérieur",
+                              ifelse(s01q25 %in% c("Secondaire 1 (Post Primaire) Général","Secondaire 1 (Post Primaire) Technique", "Secondaire 1er cycle" ), "Secondaire 1er cycle",
+                              ifelse(s01q25 %in% c("Secondaire 2 Général","Secondaire 2 Technique", "Secondaire 2e cycle" ), "Secondaire 2e cycle",as.character(s01q25))
+                                     )
+                              )
+            )
+            
+            
+            )
+ 
+data |> 
+       select(presence_pere) |> 
+       pull(presence_pere) |> 
+       table(useNA = "ifany")
+
+data |> 
+       select(s01q25) |> 
+       pull(s01q25) |> 
+       table(useNA = "ifany")
+
+
+table(data |> select(s01q22,s01q27 ), useNA = "ifany")
+```
+
+[La suite des caractéristique du père vont etre reconsiderer depuis statat et corrigé dans R.]{.underline}
+
+**caractéristique de la mère**
+
+```{r}
+tables <- data |> 
+    filter(age<=16) |> 
+  select( s01q29 , s01q31,s01q32, s01q33, s01q34 ) |> 
+  lapply(function(var) {
+    df <- as.data.frame(table(var, useNA = "ifany"))
+    df$Pourcentage <- round(100 * df$Freq / sum(df$Freq), 1)  # Calcul du %
+    return(df)
+  })
+
+for (var in names(tables)) {
+  cat("\n==== Tableau des fréquences pour", var, "====\n")
+  print(tables[[var]])
+}
+```
+
+```{r}
+data <- data |> 
+    mutate(presence_mere = as.factor( ifelse(s01q29 == "Oui", "Oui",
+                                       ifelse(s01q31 == "Non","Non décédé", as.character(s01q29)))),
+            presence_mere = as.factor(ifelse(is.na(presence_mere) & lien_cm=="enfant", "Oui",
+                                    ifelse(is.na(presence_mere) & lien_cm %in% c("Autres", "Neveu/Niece"),"Non",
+                                     ifelse(is.na(presence_mere) & lien_cm %in% c("petit enfant"),"Oui", as.character(presence_mere))) )),
+            s01q32= as.factor(ifelse(s01q32 %in% c("Post-secondaire (préparation diplômes niveau BAC+2)","Supérieur" ), "Supérieur",
+                              ifelse(s01q32 %in% c("Secondaire 1 (Post Primaire) Général","Secondaire 1 (Post Primaire) Technique", "Secondaire 1er cycle" ), "Secondaire 1er cycle",
+                              ifelse(s01q32 %in% c("Secondaire 2 Général","Secondaire 2 Technique", "Secondaire 2e cycle" ), "Secondaire 2e cycle",as.character(s01q32))
+                                     )
+                              )
+            )
+            
+            )
+ 
+data |> 
+       select(presence_mere) |> 
+       pull(presence_mere) |> 
+       table(useNA = "ifany")
+
+data |> 
+       select(s01q32) |> 
+       pull(s01q32) |> 
+       table(useNA = "ifany")
+
+```
+
+**NB: je doute que la varible CSP de la mere soit fiable**
+
+```{r}
+
+data<-data |> 
+    rename(
+        niveau_etude_plus_eleve_pere = s01q25, 
+        CSP_pere= s01q27,
+        niveau_etude_plus_eleve_mere=s01q32,
+        CSP_mere=s01q34
+        
+    )
+
+
+```
+
+## selection de la base corrigée
+
+```{r}
+data<- data |> 
+            select(grappe,menage,s01q00a ,region, Departement,milieu_residence,sexe,lien_cm,acte_naissance,starts_with("sit_mat"),
+                   age, age_cm, starts_with("presence"),starts_with(" niveau_etude"),starts_with(" CSP"))
+
+# Sauvegarder un dataframe R en format Stata (.dta)
+write_dta(data, "../clean_data/section01_correct.dta")
+
+```
