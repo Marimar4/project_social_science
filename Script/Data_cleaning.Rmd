@@ -1,0 +1,700 @@
+---
+title: "Stats_pop"
+author: "RC"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+---
+title: "Statistiques_descriptives"
+output: pdf_document
+date: "2024-07-25"
+---
+# Importation des packages
+
+```{r, warning=FALSE, include=FALSE}
+
+library(haven) 
+library(openxlsx)
+library(purrr)
+library(dplyr)
+library(stringr)
+library(questionr)
+library(ggplot2)
+library(readxl)
+library(writexl)
+library(survey)
+library(tidyr)
+library(flextable)
+library(magrittr)
+library(table1)
+library(webr)
+library(ggplot2)
+library(dplyr)
+library(scales)
+library(gridExtra)
+```
+
+
+
+# Importation des données de travail
+
+```{r, warning=FALSE}
+revenu_emploi = read_dta("C:/Users/LENOVO/Desktop/ENSAE_PARIS/3A/TP_SDS/Data/Final/revenu_emploi.dta")
+revenu_hors_emploi = read_dta("C:/Users/LENOVO/Desktop/ENSAE_PARIS/3A/ML_NLP/Data/Temp/revenu_emploi_2.dta")
+base = read_dta("C:/Users/LENOVO/Desktop/ENSAE_PARIS/3A/ML_NLP/Data/Temp/base_demo.dta")
+```
+
+
+# Basic checks
+
+## Base démographique
+
+```{r}
+str(base)
+```
+
+Les variables ont été exportées au bon format.
+
+```{r}
+sum(duplicated(base))
+```
+
+Pas de doublons
+
+```{r}
+base$repondant <- factor(base$s02q00_0, levels = c(1, 2), labels = c("Lui-même", "Autre"))
+
+table(base$repondant)
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+# Filtrer les NA avant de compter
+base_pie <- base %>%
+  filter(!is.na(repondant)) %>%  # Supprimer les NA
+  count(repondant) %>%
+  mutate(pct = n / sum(n) * 100)  # Ajouter le pourcentage
+
+# Création du camembert
+ggplot(base_pie, aes(x = "", y = n, fill = repondant)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar(theta = "y") +  # Transformation en camembert
+  theme_void() +  # Enlever les axes
+  labs(title = "Répartition des répondants") +
+  scale_fill_manual(values = c("Lui-même" = "red", "Autre" = "gray90")) +  # Rouge et gris clair pour meilleure visibilité
+  geom_text(aes(label = paste0(round(pct, 1), "%")), 
+            position = position_stack(vjust = 0.5), 
+            color = "black", size = 5)  # Texte noir pour lisibilité
+```
+Dans un tiers des cas, le repondant est un autre membre de la famille.
+
+# Base emploi
+
+```{r}
+str(revenu_emploi)
+```
+
+Les variables ont été exportées au bon format.
+
+```{r}
+sum(duplicated(revenu_emploi))
+```
+
+Pas de doublons
+
+```{r}
+revenu_emploi$repondant <- factor(revenu_emploi$s01q00_0, levels = c(1, 2), labels = c("Lui-même", "Autre"))
+
+table(revenu_emploi$repondant)
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+# Filtrer les NA avant de compter
+revenu_emploi_pie <- revenu_emploi %>%
+  filter(!is.na(repondant)) %>%  # Supprimer les NA
+  count(repondant) %>%
+  mutate(pct = n / sum(n) * 100)  # Ajouter le pourcentage
+
+# Création du camembert
+ggplot(revenu_emploi_pie, aes(x = "", y = n, fill = repondant)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar(theta = "y") +  # Transformation en camembert
+  theme_void() +  # Enlever les axes
+  labs(title = "Répartition des répondants") +
+  scale_fill_manual(values = c("Lui-même" = "red", "Autre" = "gray90")) +  # Rouge et gris clair pour meilleure visibilité
+  geom_text(aes(label = paste0(round(pct, 1), "%")), 
+            position = position_stack(vjust = 0.5), 
+            color = "black", size = 5)  # Texte noir pour lisibilité
+```
+S'agit-il du CM quand il s'agit d'un autre?
+
+```{r}
+revenu_emploi<- revenu_emploi %>%
+  mutate(repondant_ide = ifelse(s01q00a == 1, "CM", "Autre membre"))
+
+# Affichage du dataframe
+table(revenu_emploi$repondant_ide,revenu_emploi$repondant)
+```
+Nombre de fois que les id des parents sont precisés sont renseignes
+```{r}
+
+# Création d'une variable catégorielle pour l'état des informations
+revenu_emploi <- revenu_emploi %>%
+  mutate(
+    statut = case_when(
+      mere_ind == "" & pere_ind == "" ~ "Aucun renseigné",
+      mere_ind != "" & pere_ind == "" ~ "Seulement mère renseignée",
+      mere_ind == "" & pere_ind != "" ~ "Seulement père renseigné",
+      TRUE ~ "Les deux renseignés"
+    )
+  )
+
+# Calcul des proportions
+df_proportions <- revenu_emploi %>%
+  count(statut) %>%
+  mutate(pct = n / sum(n) * 100)
+
+# Affichage du camembert
+ggplot(df_proportions, aes(x = "", y = n, fill = statut)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar(theta = "y") +
+  theme_void() +
+  labs(title = "Proportion d'enfants renseignés pour le père et la mère") +
+  geom_text(aes(label = paste0(round(pct, 1), "%")), 
+            position = position_stack(vjust = 0.5), size = 5)
+```
+Voir si on peut remplacer pour certains par l'ID du CM
+
+```{r}
+table(revenu_emploi$statut,revenu_emploi$s01q02)
+```
+
+3* : quand c le fils, la fille du CM, on peut completer l'information dans la phase de correction
+
+Vérifier le niveau d'information sur le revenu
+
+-- Combien de fois les revenus sont renseignés
+
+```{r}
+
+# Création d'une variable catégorielle pour l'état des informations
+base <- revenu_emploi %>%
+  mutate(
+    statut_rens = case_when(
+      mere_ind == "" & pere_ind == "" ~ "Aucun renseigné",
+      mere_ind != "" | pere_ind != "" ~ "Au moins un renseigné",
+    )
+  )
+base <- base %>%
+  filter(statut_rens == "Au moins un renseigné")
+
+base <- base %>%
+  mutate(
+    statut = case_when(
+      is.na(s04q43_mere) & is.na(s04q43_pere) ~ "Aucun renseigné",
+      !is.na(s04q43_mere) & is.na(s04q43_pere) ~ "Salaire de la mère",
+      is.na(s04q43_mere) & !is.na(s04q43_pere) ~ "Salaire du père",
+      !is.na(s04q43_mere) & !is.na(s04q43_pere) ~ "Salaire des deux parents"
+    )
+  )
+
+table(base$s04q43_pere)
+# Calcul des proportions
+df_proportions <- base %>%
+  count(statut) %>%
+  mutate(pct = n / sum(n) * 100)
+
+# Affichage du camembert
+ggplot(df_proportions, aes(x = "", y = n, fill = statut)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar(theta = "y") +
+  theme_void() +
+  labs(title = "Proportion d'enfants renseignés pour le père et la mère") +
+  geom_text(aes(label = paste0(round(pct, 1), "%")), 
+            position = position_stack(vjust = 0.5), size = 5)
+```
+Le salaire du CM
+```{r}
+sum(is.na(revenu_emploi$s04q43_CM))/count(revenu_emploi)
+```
+
+Il est renseigné dans 11% des cas
+
+** Les valeurs reportées sont-elles cohérentes avec les catégories socioprofessionnelles?
+
+Le pere
+```{r}
+prop.table(table(revenu_emploi$s01q26))*100
+```
+```{r}
+table(revenu_emploi$s01q26,revenu_emploi$s01q27)
+```
+
+Tous ceux qui sont sans emploi n'ont reporté aucune catégorie professionnelle.
+Ont-ils reporté des salaires?
+
+```{r}
+base <- revenu_emploi %>%
+  mutate(
+    statut = case_when(
+      is.na(s04q43_mere) & is.na(s04q43_pere) ~ "Aucun renseigné",
+      !is.na(s04q43_mere) & is.na(s04q43_pere) ~ "Salaire de la mère",
+      is.na(s04q43_mere) & !is.na(s04q43_pere) ~ "Salaire du père",
+      !is.na(s04q43_mere) & !is.na(s04q43_pere) ~ "Salaire des deux parents"
+    )
+  )
+table(base$s01q26,base$statut)
+```
+
+La mere
+
+```{r}
+table(revenu_emploi$s01q33,revenu_emploi$s01q34)
+```
+
+Tous ceux qui sont sans emploi n'ont reporté aucune catégorie professionnelle.
+Ont-ils reporté des salaires?
+
+```{r}
+revenu_emploi <- revenu_emploi %>%
+  mutate(
+    statut = case_when(
+      is.na(s04q43_mere) & is.na(s04q43_pere) ~ "Aucun renseigné",
+      !is.na(s04q43_mere) & is.na(s04q43_pere) ~ "Salaire de la mère",
+      is.na(s04q43_mere) & !is.na(s04q43_pere) ~ "Salaire du père",
+      !is.na(s04q43_mere) & !is.na(s04q43_pere) ~ "Salaire des deux parents"
+    )
+  )
+table(base$statut)
+```
+
+```{r}
+library(ggplot2)
+
+# Créer un dataframe à partir de la table
+df_statut <- as.data.frame(table(base$statut))
+colnames(df_statut) <- c("Statut", "Effectif")  # Renommer les colonnes
+
+# Histogramme en barres
+ggplot(df_statut, aes(x = Statut, y = Effectif, fill = Statut)) +
+  geom_bar(stat = "identity", color = "black") +  # Ajoute un contour noir
+  labs(title = "Informations sur le salaire des parents", x = "Statut", y = "Effectif") +
+  theme_minimal() +  # Style propre
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  # Rotation des labels
+  scale_fill_manual(values = c("#FF6666", "#66B3FF", "#99FF99", "#FFCC99"))  # Couleurs personnalisées
+
+```
+
+```{r}
+
+```
+
+Verifier si les non-salariés n'ont pas déclarés de salaire
+
+```{r}
+table(base$s01q34,base$statut)
+```
+
+
+```{r}
+base <- base %>% filter(statut == "Salaire de la mère")
+table(base$s01q33)
+```
+
+Le CM
+
+```{r}
+
+# Création d'une variable catégorielle pour l'état des informations
+base <- revenu_emploi %>%
+  mutate(
+    statut_rens = case_when(
+      is.na(s04q43_CM) ~ "Pas renseigné",
+      !is.na(s04q43_CM) ~ "Renseigné",
+    )
+  )
+
+# Calcul des proportions
+df_proportions <- base %>%
+  count(statut_rens) %>%
+  mutate(pct = n / sum(n) * 100)
+
+# Affichage du camembert
+ggplot(df_proportions, aes(x = "", y = n, fill = statut_rens)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar(theta = "y") +
+  theme_void() +
+  labs(title = "Informations sur le salaire du CM") +
+  geom_text(aes(label = paste0(round(pct, 1), "%")), 
+            position = position_stack(vjust = 0.5), size = 5)+
+  scale_fill_manual(values = colors)
+
+
+colors <- c("grey", "#800020")  # Rouge bordeaux, beige
+
+```
+
+
+```{r}
+library(ggplot2)
+library(dplyr)
+
+# Création du dataframe à partir du tableau
+df_professions <- data.frame(
+  Profession = c("Cadre moyen/agent de maîtrise", "Cadre supérieur", 
+                 "Manœuvre, aide ménagère", "Ouvrier ou employé non qualifié", 
+                 "Ouvrier ou employé qualifié", "Patron", 
+                 "Stagiaire ou Apprenti rémunéré", "Travailleur Familial contribuant"),
+  Effectif = c(370, 54, 794, 1125, 972, 1, 390, 45),  # Nombre d'individus
+  Pourcentage = c(10, 2, 21, 30, 26, 0, 10, 1),  # Pourcentage individuel
+  Cumulé = c(9.86, 11.30, 32.47, 62.46, 88.38, 88.40, 98.80, 100.00)  # Pourcentage cumulé
+)
+
+ggplot(df_professions, aes(x = reorder(Profession, -Effectif), y = Effectif, fill = Profession)) +
+  geom_bar(stat = "identity", color = "black") +  # Histogramme en barres avec contours noirs
+  geom_text(aes(label = paste0(Pourcentage, "%")), vjust = -0.3, size = 5) +  # Ajouter les valeurs
+  labs(title = "Secteur d'activité des moins de 15 ans",
+       x = "Profession", y = "Effectif") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  # Rotation des étiquettes pour lisibilité
+  scale_fill_manual(values = c("#FF6666", "#66B3FF", "#99FF99", "#FFCC99", "#C44D58", "#4ECDC4", "#FF6B6B", "#556270"))  # Couleurs personnalisées
+
+```
+
+* Voir si les valeurs sont normales
+
+```{r}
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+
+# Transformer en format long
+base_long <- revenu_emploi %>%
+  pivot_longer(cols = c(s04q43_CM, s04q43_mere, s04q43_pere),
+               names_to = "variable",
+               values_to = "valeur") %>%
+  mutate(variable = recode(variable,
+                           "s04q43_CM" = "Salaire du CM",
+                           "s04q43_mere" = "Salaire de la mère",
+                           "s04q43_pere" = "Salaire du père"))
+
+# Créer le boxplot avec noms clairs
+ggplot(base_long, aes(x = variable, y = valeur, fill = variable)) +
+  geom_boxplot() +
+  theme_minimal() +
+  labs(title = "Boxplot des Salaires",
+       x = "Catégorie",
+       y = "Montant du Salaire") +
+  scale_fill_manual(values = c("Salaire du CM" = "red", "Salaire de la mère" = "blue", "Salaire du père" = "green"))  # Couleurs personnalisées
+```
+```{r}
+# Fusionner avec left join (garder toutes les lignes de revenu_emploi)
+merged_df <- merge(revenu_emploi, education, by = c("menage", "grappe"), all.x = TRUE)
+```
+
+
+```{r}
+(2,14)
+Quel est le niveau d'études suivi par [NOM]  au cours de l'année 2020/2021 ?
+
+[INS: Fournir la nomenclature des niveaux] 
+
+1 Maternelle ►(0.02)
+2 Primaire ►(0.02)
+3 Secondaire 1 (Post Primaire) Général ►(0.02)
+
+4 Secondaire 1 (Post Primaire) Technique
+
+5 Secondaire 2 Général
+6 Secondaire 2 Technique
+7 Post-secondaire (préparation diplômes niveau BAC+2)
+
+
+8 Supérieur 
+
+```
+
+
+```{r}
+library(dplyr)
+
+# Exemple : Si la variable s02q14 est dans un dataframe df_education
+df_education <- df_education %>%
+  mutate(s02q14_recoded = case_when(
+    s02q14 == 1 ~ "Maternelle",
+    s02q14 == 2 ~ "Primaire",
+    s02q14 %in% c(3, 4) ~ "Collège",  # Secondaire 1 (Post Primaire)
+    s02q14 %in% c(5, 6) ~ "Secondaire",  # Secondaire 2 Général et Technique
+    s02q14 == 7 ~ "Post-secondaire",  # BAC+2
+    s02q14 == 8 ~ "Supérieur",  # Universitaire
+    TRUE ~ NA_character_  # Gère les valeurs manquantes
+  ))
+
+# Vérification du recodage
+table(df_education$s02q14_recoded)
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(forcats)
+library(viridis)
+
+# Définition de l'ordre des niveaux d'éducation
+education_levels <- c("Maternelle", "Primaire", "Collège", "Secondaire", "Post-secondaire", "Supérieur")
+
+# Transformation des données en format long et suppression des NA
+df_long <- df_education %>%
+  select(s02q14_recoded, transferts_cm, transferts_mere, transferts_pere) %>%
+  pivot_longer(cols = c(transferts_cm, transferts_mere, transferts_pere),
+               names_to = "Statut",
+               values_to = "Salaire") %>%
+  mutate(
+    Statut = recode(Statut,
+                    "transferts_cm" = "Salaire du CM",
+                    "transferts_mere" = "Salaire de la mère",
+                    "transferts_pere" = "Salaire du père"),
+    s02q14_recoded = factor(s02q14_recoded, levels = education_levels, ordered = TRUE)  # Trier par niveau
+  ) %>%
+  filter(!is.na(Salaire) & !is.na(s02q14_recoded))  # Supprimer toutes les lignes avec NA
+
+# Graphique des salaires moyens selon le niveau d'éducation
+ggplot(df_long, aes(x = s02q14_recoded, y = Salaire, fill = Statut)) +
+  geom_bar(stat = "summary", fun = "mean", position = "dodge", color = "black") +
+  labs(title = "Montant moyen du transferts selon le niveau d'éducation",
+       x = "Niveau d'Éducation",
+       y = "Salaire Moyen") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  # Rotation pour meilleure lisibilité
+  scale_fill_viridis_d(option = "C")  # Palette scientifique et lisible
+```
+
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(forcats)
+library(viridis)
+
+# Définition de l'ordre des niveaux d'éducation
+education_levels <- c("A une fois fréquenté", "N'a jamais fréquenté")
+library(dplyr)
+
+# Labellisation de la variable s02q03
+df_education <- df_education %>%
+  mutate(s02q03_label = recode(s02q03,
+                               "1" = "A une fois fréquenté",
+                               "2" = "N'a jamais fréquenté"))
+
+# Vérification du résultat
+table(df_education$s02q03_label)
+
+# Transformation des données en format long et suppression des NA
+df_long <- df_education %>%
+  select(s02q03_label, transferts_cm, transferts_mere, transferts_pere) %>%
+  pivot_longer(cols = c(transferts_cm, transferts_mere, transferts_pere),
+               names_to = "Statut",
+               values_to = "Salaire") %>%
+  mutate(
+    Statut = recode(Statut,
+                    "transferts_cm" = "Salaire du CM",
+                    "transferts_mere" = "Salaire de la mère",
+                    "transferts_pere" = "Salaire du père"),
+    s02q14_recoded = factor(s02q03_label, levels = education_levels, ordered = TRUE)  # Trier par niveau
+  ) %>%
+  filter(!is.na(Salaire) & !is.na(s02q14_recoded))  # Supprimer toutes les lignes avec NA
+
+# Graphique des salaires moyens selon le niveau d'éducation
+ggplot(df_long, aes(x = s02q14_recoded, y = Salaire, fill = Statut)) +
+  geom_bar(stat = "summary", fun = "mean", position = "dodge", color = "black") +
+  labs(title = "Montant moyen du transfert selon qu'il ait fréquenté une école formelle",
+       x = "Niveau d'Éducation",
+       y = "Salaire Moyen") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  # Rotation pour meilleure lisibilité
+  scale_fill_viridis_d(option = "C")  # Palette scientifique et lisible
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+
+# Création du dataframe avec les données
+df_professions <- data.frame(
+  Profession = c("Cadre moyen/agent de maîtrise", "Cadre supérieur", 
+                 "Manœuvre, aide ménagère", "Ouvrier ou employé non qualifié", 
+                 "Ouvrier ou employé qualifié", "Patron", 
+                 "Stagiaire ou Apprenti non rénuméré", "Stagiaire ou Apprenti rénuméré", 
+                 "Travailleur Familial contribuant", "Travailleur pour compte propre"),
+  Effectif = c(574, 84, 1245, 1496, 1340, 209, 983, 559, 3924, 11740),  
+  Pourcentage = c(2.59, 0.38, 5.62, 6.75, 6.05, 0.94, 4.44, 2.52, 17.71, 52.99)  
+) %>%
+  mutate(Pourcentage = round(Pourcentage, 1))  # Arrondir les pourcentages
+
+# Création du diagramme en barres
+ggplot(df_professions, aes(x = reorder(Profession, Effectif), y = Effectif, fill = Profession)) +
+  geom_bar(stat = "identity", color = "black") +  # Ajout des contours noirs
+  geom_text(aes(label = paste0(" (", Pourcentage, "%)")), 
+            hjust = -0.1, size = 3) +  # Affichage des valeurs
+  labs(title = "Répartition des Professions",
+       x = "Profession", y = "Effectif") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  # Rotation des labels
+  scale_fill_manual(values = c("#FF6666", "#66B3FF", "#99FF99", "#FFCC99", "#C44D58", 
+                               "#4ECDC4", "#FF6B6B", "#556270", "#D4A017", "#808000")) +  # Couleurs personnalisées
+  coord_flip()  # Affichage horizontal pour une meilleure lisibilité
+```
+
+
+```{r}
+(2,03)
+[NOM] a-t-il/elle fait ou fait-il/elle des études actuellement dans une école formelle?
+
+```
+
+#Quelques recodages 
+
+Secteur d'activité -->  Sans emploi, agriculture, industries, services
+Categories socioprofessionnelle --> Cadre, ouvrier/manoeuvre, apprenti, travailleur non rémunéré
+
+```{r}
+
+# Recodage du secteur d'activité
+revenu_emploi <- revenu_emploi %>%
+  mutate(
+    activite_mere = case_when(
+      s01q33 %in% c(0) ~ "Sans emploi",
+      s01q33 %in% c(1) ~ "Agriculture",
+      s01q33 %in% c(2, 3, 4) ~ "Industries",
+      s01q33 %in% c(5, 6, 7, 8, 9) ~ "Services",
+      TRUE ~ NA
+    )
+  )
+
+# Recodage de la catégorie socioprofessionnelle
+revenu_emploi <- revenu_emploi %>%
+  mutate(
+    categorie_sociopro_mere = case_when(
+      s01q34 %in% c(1, 2) ~ "Cadre",
+      s01q34 %in% c(3, 4, 5) ~ "Ouvrier/Manœuvre",
+      s01q34 %in% c(6, 7) ~ "Apprenti",
+      s01q34 %in% c(8, 9, 10) ~ "Travailleur non rémunéré",
+      s01q34 %in% c(11) ~ "NSP",
+      TRUE ~ NA
+    )
+  )
+
+```
+
+
+```{r}
+
+# Recodage du secteur d'activité
+revenu_emploi <- revenu_emploi %>%
+  mutate(
+    activite_pere = case_when(
+      s01q33 %in% c(0) ~ "Sans emploi",
+      s01q33 %in% c(1) ~ "Agriculture",
+      s01q33 %in% c(2, 3, 4) ~ "Industries",
+      s01q33 %in% c(5, 6, 7, 8, 9) ~ "Services",
+      TRUE ~ NA
+    )
+  )
+
+# Recodage de la catégorie socioprofessionnelle
+revenu_emploi <- revenu_emploi %>%
+  mutate(
+    categorie_sociopro_pere = case_when(
+      s01q34 %in% c(1, 2) ~ "Cadre",
+      s01q34 %in% c(3, 4, 5) ~ "Ouvrier/Manœuvre",
+      s01q34 %in% c(6, 7) ~ "Apprenti",
+      s01q34 %in% c(8, 9, 10) ~ "Travailleur non rémunéré",
+      s01q34 %in% c(11) ~ "NSP",
+      TRUE ~ NA
+    )
+  )
+```
+
+
+# Revenu hors emploi
+
+retraite, pensions (veuvage ou inhabitilité), loyers, revenus financiers, autres
+
+reve_hors_emp_ind_CM reve_hors_emp_ind_pere reve_hors_emp_ind_mere
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+
+# Transformer les données en format long
+base_long <- revenu_hors_emploi %>% select(starts_with("reve_hors_emp_ind"))%>%
+  pivot_longer(cols = starts_with("reve_hors_emp_ind"),
+               names_to = "Variable",
+               values_to = "Reponse")%>%
+    mutate(
+    Variable = case_when(
+      Variable == "reve_hors_emp_ind_CM" ~ "CM",
+      Variable == "reve_hors_emp_ind_pere" ~ "Père",
+      Variable == "reve_hors_emp_ind_mere" ~ "Mère"
+    )) %>%group_by(Variable) %>%
+  summarise(Proportion_Oui = mean(Reponse,na.rm = TRUE) * 100)  # Calcul de la proportion de 1 (Oui)
+
+ggplot(base_long, aes(x = Variable, y = Proportion_Oui, fill = Variable)) +
+  geom_bar(stat = "identity") +
+  theme_minimal() +
+  labs(title = "Déclaration de revenus hors emploi",
+       x = "Variable",
+       y = "Proportion (%)") +
+  geom_text(aes(label = paste0(round(Proportion_Oui, 1), "%")), vjust = -0.5, size = 5) +
+  scale_fill_manual(values = c("red", "blue", "green"))
+```
+** Montant reporté par ceux-ci
+
+*** Verifier que ceux qui ont reporté ces valeurs n'ont pas dit non précédemment
+```{r}
+table(revenu_hors_emploi$reve_hors_emp_CM,revenu_hors_emploi$reve_hors_emp_ind_CM)
+table(revenu_hors_emploi$reve_hors_emp_mere,revenu_hors_emploi$reve_hors_emp_ind_mere)
+table(revenu_hors_emploi$reve_hors_emp_pere,revenu_hors_emploi$reve_hors_emp_ind_pere)
+```
+
+
+```{r}
+# Transformer en long format
+base_long <- revenu_hors_emploi %>% select(reve_hors_emp_CM, reve_hors_emp_mere, reve_hors_emp_pere)%>%
+  pivot_longer(cols = c(reve_hors_emp_CM, reve_hors_emp_mere, reve_hors_emp_pere),
+               names_to = "variable",
+               values_to = "valeur")
+
+base_long <- base_long %>% filter(valeur !=0)
+
+# Créer le boxplot
+ggplot(base_long, aes(x = variable, y = valeur, fill = variable)) +
+  geom_boxplot() +
+  theme_minimal() +
+  labs(title = "Boxplot des valeurs pour CM, la mère et le père",
+       x = "Variable",
+       y = "Valeur") +
+  scale_fill_manual(values = c("red", "blue", "green"))  # Couleurs personnalisées
+```
+
+A quel point ces valeurs sont-elles faibles ?
+
+```{r}
+base_long <- base_long %>%
+  group_by(variable) %>%  
+  summarise(min = min(valeur, na.rm = TRUE)) 
+base_long
+```
+
+
+
