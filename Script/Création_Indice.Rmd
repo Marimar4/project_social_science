@@ -1,0 +1,442 @@
+---
+title: "Création de l'indice économique"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Installation des packages et librairies
+
+## Installation des packages
+
+```{r, warning=FALSE, include=FALSE}
+#install.packages("dplyr")
+#install.packages("stringr")
+#install.packages("questionr")
+#install.packages("ggplot2")
+#install.packages("readxl")
+#install.packages("survey")
+#install.packages("foreign")
+```
+
+
+## Importation des librairies
+
+```{r, warning=FALSE, include=FALSE}
+library(tibble)
+library(factoextra)
+library(FactoMineR)
+library(dplyr)
+library(stringr)
+library(questionr)
+library(ggplot2)
+library(readxl)
+library(writexl)
+library(survey)
+library(tidyr)
+library(foreign)
+library(haven)
+```
+
+## Importation des données 
+
+### Set directory
+```{r}
+setwd("C:/Users/LENOVO/Desktop/ENSAE_PARIS/3A/TP_SDS")
+```
+
+
+```{r}
+logement = read_dta("C:/Users/LENOVO/Desktop/ENSAE_PARIS/3A/TP_SDS/Data/Final/logement2.dta")
+avoirs = read_dta("C:/Users/LENOVO/Desktop/ENSAE_PARIS/3A/TP_SDS/Data/Final/avoirs.dta")
+```
+
+## Mettre dans le bon format
+```{r}
+library(tidyverse) 
+avoirs <- avoirs %>%
+  pivot_wider(names_from = s12q01_label, values_from = s12q02)
+```
+
+```{r}
+short_names <- c(
+  "grappe", "menage", "ordi", "moto", "radio", "voiture", "congelateur", "camera",
+  "fer_elec", "gaz", "ventilo", "foyer_am", "maison", "photo", "tablette", "tapis",
+  "salon", "fer_charb", "camescope", "dvd", "lit", "cuisiniere", "musique",
+  "lave_linge", "velo", "hifi", "tv", "mixeur", "guitare", "matelas", "table_mange",
+  "rechaud", "groupe", "terrain", "tel_fixe", "parabole", "fusil", "tondeuse",
+  "micro_onde", "robot", "imprimante", "climatiseur", "meubles", "aspirateur",
+  "tel_port", "frigo", "bateau"
+)
+names(avoirs) <- short_names
+```
+
+
+
+
+
+# Eliminer les variables qui ne discriminent pas assez
+
+```{r}
+library(dplyr)
+
+# Sélection des variables économiques
+vars_econ <- c("ordi", "moto", "radio", "voiture", "congelateur", "camera",
+               "fer_elec", "gaz", "ventilo", "foyer_am", "maison", "photo", "tablette", "tapis",
+               "salon", "fer_charb", "camescope", "dvd", "lit", "cuisiniere", "musique",
+               "lave_linge", "velo", "hifi", "tv", "mixeur", "guitare", "matelas", "table_mange",
+               "rechaud", "groupe", "terrain", "tel_fixe", "parabole", "fusil", "tondeuse",
+               "micro_onde", "robot", "imprimante", "climatiseur", "meubles", "aspirateur",
+               "tel_port", "frigo", "bateau")
+
+# Calculer le pourcentage de "Oui" (1) et "Non" (2) pour chaque variable
+percentages <- avoirs %>%
+  select(all_of(vars_econ)) %>%
+  summarise(across(everything(), 
+                   list(Oui = ~ sum(. == 1, na.rm = TRUE) / sum(. %in% c(1, 2), na.rm = TRUE) * 100,
+                        Non = ~ sum(. == 2, na.rm = TRUE) / sum(. %in% c(1, 2), na.rm = TRUE) * 100)))
+
+# Afficher les résultats
+print(percentages)
+
+
+# Transposer pour mieux visualiser
+percentages <- as.data.frame(t(percentages)) 
+colnames(percentages) <- c("Pourcentage_Oui")
+
+# Trier les variables par % de "Oui"
+percentages <- percentages %>% arrange(desc(Pourcentage_Oui))
+
+# Afficher les résultats
+print(percentages)
+```
+
+
+```{r}
+library(tidyr)
+
+library(tibble)
+
+# Transformer les index en colonne "Variable"
+percentages <- percentages %>%
+  rownames_to_column(var = "Variable")
+
+# Afficher le résultat
+head(percentages)
+
+# Garder seulement les variables entre 5% et 95% de "Oui"
+vars_selected <- percentages$Variable[which(percentages$Pourcentage_Oui > 5 & percentages$Pourcentage_Oui < 95)]
+
+# Supprimer "Oui" et "Non" de chaque élément
+my_list <- gsub("_Oui|_Non", "", vars_selected)
+
+# Enlever les doublons
+my_list <- unique(my_list)
+
+# Afficher la liste propre
+print(my_list)
+
+# Filtrer les données pour ne garder que ces variables pertinentes
+data_pca <- avoirs %>%
+  select(all_of(my_list), grappe, menage)
+
+# Vérifier les variables retenues
+print(names(data_pca))
+```
+
+```{r}
+
+data_pca <- data_pca %>%
+  mutate(across(c(my_list),
+         ~ case_when(
+           . == 1 ~ paste("a un", cur_column()), 
+           . == 2 ~ paste("n'a pas de", cur_column()), 
+           TRUE ~ as.character(.)
+         )))
+```
+
+
+
+```{r}
+table(logement$s11q04)
+library(dplyr)
+
+logement <- logement %>%
+  mutate(s11q04 = case_when(
+    s11q04 %in% c("Propriétaire avec titre ou acte de propriété", 
+                 "Propriétaire sans titre ou acte de propriété", 
+                 "Copropriétaire avec titre ou acte", 
+                 "Copropriétaire sans titre ni acte") ~ "Propriétaire",
+    s11q04 == "Locataire" ~ "Locataire",
+    s11q04 %in% c("Logé gratuitement (parents, amis)", 
+                 "Logé par l'employeur") ~ "Logé",
+    TRUE ~ "s11q04"  # Garde les autres valeurs inchangées
+  ))
+
+
+table(logement$s11q54)
+
+library(dplyr)
+
+logement <- logement %>%
+  mutate(s11q54 = case_when(
+    s11q54 == "Aucune toilette (dans la nature)" ~ "Aucune toilette",
+    s11q54 %in% c("Autre (à préciser)", "Toilettes publiques") ~ "Autre",
+    s11q54 %in% c("Fosse rudimentaire/trou ouvert", "Latrines dallées simplement", 
+                     "Latrines ECOSAN (dallées, couvertes)", "Latrines SANPLAT (dallées, non couvertes)", 
+                     "Latrines VIP (dallées, ventillées)") ~ "Latrines",
+    s11q54 %in% c("W.C. ext. avec chasse d'eau", "W.C. ext. chasse d'eau manuelle",
+                     "W.C. int. avec chasse d'eau", "W.C. int. chasse d'eau manuelle") ~ "WC",
+    TRUE ~ "Autre"  # Précaution si d'autres valeurs existent
+  ))
+
+logement <- logement %>%
+  mutate(s11q21 = case_when(
+    s11q21 == "Oui" ~ "Eau courante",
+    s11q21 %in% c("Non") ~ "Pas d'eau",
+    TRUE ~ "Autre" 
+  ))
+
+```
+
+```{r}
+library(dplyr)
+
+logement <- logement %>%
+  select(-s01q00a, -age)
+```
+
+```{r}
+library(dplyr)
+
+merged_df <- logement %>%
+  left_join(data_pca, by = c("grappe", "menage"))
+
+```
+
+
+```{r}
+merged_df <- logement %>% 
+  left_join(data_pca, by = c("grappe", "menage"))
+
+merged_df <- merged_df %>%
+  mutate(across(-c(grappe, menage), as.factor))
+
+library(dplyr)
+
+df_pca <- merged_df %>%
+  mutate(across(where(is.factor), ~ fct_explicit_na(., na_level = names(sort(table(.), decreasing = TRUE))[1])))
+
+names(logement) = c("grappe", "menage", "logement", "statut" , "materiau", "toit", "sol", "eau", "energie", "toilettes")
+```
+
+
+# Run PCA
+
+```{r}
+
+res.mca = MCA(df_pca, quali.sup = c("menage","grappe"),graph = TRUE)
+
+var_contrib_dim1 <- res.mca$var$contrib[, 1]
+
+top_vars <- names(sort(var_contrib_dim1, decreasing = TRUE))[1:15]
+
+fviz_mca_var(res.mca, select.var = list(name = top_vars), repel = TRUE)
+
+
+p <- fviz_mca_biplot(res.mca, 
+                     repel = TRUE, select.var = list(name = top_vars), 
+                     label = "var") +  
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+          panel.background = element_rect(fill = "white"),
+plot.background = element_rect(fill = "white"))
+
+p <- p + annotate("segment", x = -0.5, xend = 0.5, y = 1.2, yend = 1.2, arrow = arrow(length = unit(0.3, "cm")), color = "red") +
+  annotate("text", x = -0, y = 1.3, label = "Sens du niveau de richesse", color = "red", size = 3.5, hjust = 0.5)
+print(p)
+ggsave(filename = "C:/Users/LENOVO/Desktop/pca.png", plot = p, width = 10, height = 8)
+```
+
+##classification hierarchique
+
+```{r}
+library(FactoMineR)
+library(factoextra)
+library(dplyr)
+
+# Récupérer les coordonnées des individus après PCA (seulement les axes importants)
+data_clustering <- res.mca$ind$coord[, 1]  # Sélectionner les 3 premières composantes
+
+# Vérifier les données
+head(data_clustering)
+
+# Calcul de la matrice de distances
+dist_matrix <- dist(data_clustering, method = "euclidean")
+
+# Classification hiérarchique avec méthode de Ward
+hc <- hclust(dist_matrix, method = "ward.D2")
+
+# Affichage du dendrogramme
+plot(hc, labels = FALSE, main = "Classification Hiérarchique des Individus", cex = 0.8)
+
+
+# Déterminer le nombre optimal de classes avec un "coupe" du dendrogramme
+fviz_nbclust(data_clustering, FUN = hcut, method = "wss")  # Méthode du coude
+
+```
+```{r}
+
+library(NbClust)
+nb_clusters <- NbClust(data_clustering, distance = "euclidean", min.nc = 2, max.nc = 6, method = "ward.D2")
+
+
+# Découper en 5 classes 
+clusters <- cutree(hc, k = 5)
+
+# Ajouter les clusters aux données originales
+df_final <- df_pca %>%
+  mutate(cluster = as.factor(clusters))
+
+# Vérifier les groupes
+table(df_final$cluster,df_final$s11q01 )
+```
+
+La classification hierarchique ne marche pas trop..
+
+```{r}
+coords = res.mca$ind$coord
+wealth_index_ACM_q = coords[, 1]
+# Normaliser les scores entre 0 et 100
+wealth_index_ACM_q_normalized <- (wealth_index_ACM_q - min(wealth_index_ACM_q)) / (max(wealth_index_ACM_q) - min(wealth_index_ACM_q)) * 100
+
+# Ajouter l'indice de richesse normalisé à la base de données
+df_final = df_pca %>% mutate(wealth_index_ACM_q = wealth_index_ACM_q_normalized)
+
+ggplot(df_final, aes(x = wealth_index_ACM_q_normalized)) + geom_histogram(binwidth = 15, fill = "blue", color = "black", alpha = 0.7) +
+  labs(title = "Distribution de l'indice économique", x = "Score économique", y = "Fréquence") +theme_minimal()
+
+quintiles <- quantile(df_final$wealth_index_ACM_q, probs = seq(0, 1, by = 0.2))
+df_final$wealth_index_ACM_q = cut(df_final$wealth_index_ACM_q, breaks = quintiles, include.lowest = TRUE,labels = c("Les plus pauvres", "Les pauvres", "Les médians", "Les aisés", "Les plus aisés"))
+```
+
+```{r}
+df_final = df_final %>% select(grappe, menage, wealth_index_ACM_q)
+write_xlsx(df_final, path = "C:/Users/LENOVO/Desktop/Indice_eco.xlsx")
+```
+
+```{r}
+
+```
+
+
+
+# Revenus 
+```{r}
+revenus = read_dta("C:/Users/LENOVO/Desktop/ENSAE_PARIS/3A/TP_SDS/Data/Final/section04b_select.dta")
+education = read_dta("C:/Users/LENOVO/Desktop/ENSAE_PARIS/3A/TP_SDS/Data/Final/section2_select.dta")
+age =  read_dta("C:/Users/LENOVO/Desktop/ENSAE_PARIS/3A/TP_SDS/Data/Temp/age.dta")
+```
+
+```{r}
+
+```
+
+
+
+
+# Transferts 
+```{r}
+transferts = read_dta("C:/Users/LENOVO/Desktop/ENSAE_PARIS/3A/TP_SDS/Data/Final/transferts.dta")
+table(transferts$s13q20_cm)
+table(transferts$s13q20_mere)
+table(transferts$s13q20_pere)
+```
+
+```{r}
+# Fusionner avec left join (garder toutes les lignes de revenu_emploi)
+df_education <- merge(df_final, education, by = c("menage", "grappe"), all.x = TRUE)
+```
+
+
+
+
+
+
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(scales)  # Pour format % en étiquettes
+
+# Labellisation de s02q03
+df_education <- df_education %>%
+  mutate(s02q03_label = recode(s02q03,
+                               "1" = "A une fois fréquenté",
+                               "2" = "N'a jamais fréquenté"))
+
+# Suppression des NA dans wealth_index_ACM_q et s02q03_label
+df_clean <- df_education %>%
+  filter(!is.na(wealth_index_ACM_q) & !is.na(s02q03_label))
+
+# Calcul des pourcentages par groupe
+df_plot <- df_clean %>%
+  group_by(s02q03_label, wealth_index_ACM_q) %>%
+  summarise(Count = n(), .groups = "drop") %>%
+  mutate(Percentage = Count / sum(Count) * 100)  # Calcul du % au sein de chaque catégorie
+
+# Création du diagramme empilé
+ggplot(df_plot, aes(x = s02q03_label, y = Percentage, fill = as.factor(wealth_index_ACM_q))) +
+  geom_bar(stat = "identity", position = "fill", color = "black") +  # Barres empilées normalisées
+  labs(title = "Répartition du Wealth Index selon la Fréquentation Scolaire",
+       x = "Fréquentation Scolaire",
+       y = "Pourcentage",
+       fill = "Wealth Index") +
+  theme_minimal() +
+  scale_fill_viridis_d(option = "C") +  # Palette scientifique
+  scale_y_continuous(labels = percent_format())  # Afficher l'axe Y en pourcentage
+```
+
+
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(scales)
+library(forcats)  # Pour gérer l'ordre des niveaux scolaires
+
+# Définition de l'ordre des niveaux scolaires
+education_levels <- c("Maternelle", "Primaire", "Collège", "Secondaire", "Post-secondaire", "Supérieur")
+
+# Suppression des NA et transformation de s02q14 en facteur ordonné
+df_clean <- df_education %>%
+  filter(!is.na(wealth_index_ACM_q) & !is.na(s02q14_recoded)) %>%
+  mutate(s02q14_recoded = factor(s02q14_recoded, levels = education_levels, ordered = TRUE))  # Tri des niveaux scolaires
+
+# Calcul des pourcentages par groupe
+df_plot <- df_clean %>%
+  group_by(s02q14_recoded, wealth_index_ACM_q) %>%
+  summarise(Count = n(), .groups = "drop") %>%
+  mutate(Percentage = Count / sum(Count) * 100)  # Conversion en pourcentage
+
+# Création du diagramme empilé
+ggplot(df_plot, aes(x = s02q14_recoded, y = Percentage, fill = as.factor(wealth_index_ACM_q))) +
+  geom_bar(stat = "identity", position = "fill", color = "black") +  # Barres empilées normalisées
+  labs(title = "Répartition du Wealth Index selon le Niveau Scolaire",
+       x = "Niveau Scolaire",
+       y = "Pourcentage",
+       fill = "Wealth Index") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  # Rotation pour lisibilité
+  scale_fill_viridis_d(option = "C") +  # Palette scientifique
+  scale_y_continuous(labels = percent_format())  # Afficher l'axe Y en pourcentage
+```
+
+## Controles
+
+### Doublons
+
+### Ampleur des valeurs manquantes
+
